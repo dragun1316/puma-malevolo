@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>La risa del puma</title>
+<style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin:0; min-height:100vh; display:grid; place-items:center; background:#35003f; color:#fff; font-family:system-ui,sans-serif; }
+main { width:min(94vw,520px); text-align:center; padding:18px 12px 28px; }
+.poster { position:relative; width:100%; overflow:hidden; border-radius:14px; box-shadow:0 0 24px #e326e766; }
+.poster img { display:block; width:100%; height:auto; }
+.puma { position:absolute; left:24%; top:15%; width:52%; height:19%; border-radius:48%; transform-origin:50% 70%; animation: bob 1.8s ease-in-out infinite; pointer-events:none; }
+.puma::before { content:""; position:absolute; inset:4% 6% 0; border-radius:48%; background:radial-gradient(ellipse at 50% 70%, #20d9e5aa, transparent 60%); opacity:.35; animation:glow 1.3s ease-in-out infinite alternate; }
+.mouth { position:absolute; left:36%; top:66%; width:28%; height:15%; border-radius:15% 15% 48% 48%; background:#f32da5; border:2px solid #21102d; transform:scaleY(.35); transform-origin:top; animation: laugh 0.55s ease-in-out infinite alternate; }
+.mouth::before { content:""; position:absolute; top:0; left:8%; width:84%; height:35%; background:#fff5c9; clip-path:polygon(0 0,100% 0,88% 100%,72% 0,58% 100%,42% 0,27% 100%,12% 0); }
+@keyframes bob { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-5px) rotate(1deg)} }
+@keyframes laugh { from{transform:scaleY(.3)} to{transform:scaleY(1.18)} }
+@keyframes glow { from{opacity:.12} to{opacity:.65} }
+button { margin-top:16px; padding:13px 20px; border:2px solid #15d4e8; border-radius:999px; background:#e72aa8; color:white; font-weight:800; font-size:1rem; cursor:pointer; box-shadow:0 0 16px #e72aa855; }
+p { line-height:1.5; color:#f7c9f1; }
+.small { font-size:.82rem; color:#d7a9df; }
+</style>
+</head>
+<body>
+<main>
+  <div class="poster" aria-label="Ilustración del puma">
+    <img src="calaverita.jpg" alt="Puma estilo Día de Muertos con flores y colores neón">
+    <div class="puma" aria-hidden="true"><div class="mouth"></div></div>
+  </div>
+  <button id="laughButton">🔊 ¡Haz reír al puma!</button>
+  <p>Acércate… mira sus ojos… ¡JA, JA, JA! 😈</p>
+  <p class="small">Toca el botón para activar el sonido. Algunos celulares bloquean el audio hasta que el usuario toca la pantalla.</p>
+</main>
+<script>
+let audioCtx;
+function evilLaugh() {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) { alert("Este navegador no permite reproducir el efecto de sonido."); return; }
+  audioCtx = audioCtx || new AudioContext();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  const now = audioCtx.currentTime;
+  // Efecto caricaturesco sintetizado tipo “ja-ja-ja”, no una voz grabada.
+  for (let i=0; i<6; i++) {
+    const t = now + i*0.22;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    osc.type = i%2 ? "sawtooth" : "triangle";
+    osc.frequency.setValueAtTime(155 + (i%3)*32, t);
+    osc.frequency.exponentialRampToValueAtTime(95 + (i%2)*20, t+0.14);
+    filter.type = "lowpass"; filter.frequency.value = 850;
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.16, t+0.025);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t+0.17);
+    osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t+0.18);
+  }
+}
+document.getElementById("laughButton").addEventListener("click", evilLaugh);
+</script>
+</body>
+</html>
